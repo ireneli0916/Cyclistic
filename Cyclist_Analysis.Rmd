@@ -27,11 +27,15 @@ How do annual members and casual riders use Cyclistic bikes differently?
 ## Data Preparation
 
 Data was made available and downloaded via Motivate International Inc. under this [liscense](https://ride.divvybikes.com/data-license-agreement). 
-Data has coverage over the period from January 2020 to December 2020. The data was downloaded and unzipped as 10- .csv files, one presented the first quarter of 2020 and the rest - 
-one for each month of the range. Original copies and 10 .csv files were saved as separate folders. I opened .csv files in Excel and saved them as Excel Workbook files, so I can perform analysis later. All files were saved in separate folders (.zip / .csv / .xls) properly. 
+Data has coverage over the period from January 2020 to December 2020. The data was downloaded and unzipped as 10- .csv files, 
+one presented the first quarter of 2020 and the rest - one for each month of the range. Original copies and 10 .csv files were saved as separate folders. 
+I opened .csv files in Excel and saved them as Excel Workbook files, so I can perform analysis later. 
+All files were saved in separate folders (.zip / .csv / .xls) properly. 
 
 Notes: This is a public data that can be used to explore how different customer types are using Cyclistic bikes. 
-But data-privacy issues prohibit users from using riders' personally identifiable information. This means no one will b able to connect pass purchases to credit card numbers to determine if casual riders live in Cyclistic service area or if they have purchased multiple single passes.
+But data-privacy issues prohibit users from using riders' personally identifiable information. This means no one will be 
+able to connect pass purchases to credit card numbers to determine if casual riders live in Cyclistic service area or if they 
+have purchased multiple single passes.
 
 ## Set up
 
@@ -383,8 +387,7 @@ write.csv(counts, file ="/Users/irene/Desktop/Google_Project/CSV_files/avg_ride_
 * There were 11126 rows that ride duration was equal to or less than 0 minutes, and 2863 rows that ride duration was greater than one day. 
   All of these were removed and we should figure out: 
   - whether technical errors have occurred in the system (e.g. negative ride duration records)
-  - and the possibility of users rent Cyclistic over a day (e.g ride duration over 1440 minutes.)
-    
+  - and the possibility of users rent Cyclistic over a day (e.g ride duration over 1440 minutes.)    
 * There were huge number of rows that the station names were missing while the latitude and longitude information recorded. 
   I didn't remove or drop these rows, but I think the missing station name could be fixed by comparing latitude and 
   longitude information from other rows. 
