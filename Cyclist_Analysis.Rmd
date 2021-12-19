@@ -1,0 +1,394 @@
+---
+Title: "Cyclistic_Analysis"
+Author: "Irene Li"
+Date: "2021-12-15"
+Output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This is a capstone project for my journey of Google Data Analytics Professional Certificate. 
+
+This project is about getting insights of how bike-sharing differ between casual users and annual members for Cyclistic Company. 
+
+The analysis workflow will follow the six-step of data analysis: Ask, Prepare, Process, Analysis, Share, and Act. 
+
+Following are steps that illustrated how I approached my findings and what decision-making I will provide in the end. 
+
+## Business Task
+
+How do annual members and casual riders use Cyclistic bikes differently?
+
+
+## Data Preparation
+
+Data was made available and downloaded via Motivate International Inc. under this [liscense](https://ride.divvybikes.com/data-license-agreement). 
+Data has coverage over the period from January 2020 to December 2020. The data was downloaded and unzipped as 10- .csv files, one presented the first quarter of 2020 and the rest - 
+one for each month of the range. Original copies and 10 .csv files were saved as separate folders. I opened .csv files in Excel and saved them as Excel Workbook files, so I can perform analysis later. All files were saved in separate folders (.zip / .csv / .xls) properly. 
+
+Notes: This is a public data that can be used to explore how different customer types are using Cyclistic bikes. 
+But data-privacy issues prohibit users from using riders' personally identifiable information. This means no one will b able to connect pass purchases to credit card numbers to determine if casual riders live in Cyclistic service area or if they have purchased multiple single passes.
+
+## Set up
+
+First of all, I need to install required packages so I can perform analysis 
+
+* tidyverse & dplyr - for data import and wrangling 
+* lubridate - for data functions working with dates and time
+* ggplot - for create data visualization in R
+
+```{r libraries}
+install.packages("tidyverse")
+install.packages("dplyr")
+install.packages("lubridate")
+install.packages("ggplot2")
+```
+
+## Call installed packages
+
+```{r installed_packages, echo=FALSE}
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(dplyr)
+```
+
+## STEP 1: COLLECT DATA (UPLOAD DATA) for the previous 12 months
+
+Data has covererage over the period from Janurary 2020 to December 2020. 
+The data was downloaded and unzipped as 10- .csv files, one presented the first quarter of 2020 and the rest - one for each month of the range.
+
+```{r original_data}
+trip_q1_2020 <- read.csv("2020_Q1_trips.csv")
+trip_04_2020 <- read.csv("2020_04_trips.csv")
+trip_05_2020 <- read.csv("2020_05_trips.csv")
+trip_06_2020 <- read.csv("2020_06_trips.csv")
+trip_07_2020 <- read.csv("2020_07_trips.csv")
+trip_08_2020 <- read.csv("2020_08_trips.csv")
+trip_09_2020 <- read.csv("2020_09_trips.csv")
+trip_10_2020 <- read.csv("2020_10_trips.csv")
+trip_11_2020 <- read.csv("2020_11_trips.csv")
+trip_12_2020 <- read.csv("2020_12_trips.csv")
+```
+
+## STEP 2: WRANGLE DATA AND COMBINE INTO A SINGLE FILE
+
+I checked the columns names of each file to make sure they were consistent, so I could merge them together later.
+
+```{r columns_name}
+colnames(trip_q1_2020)
+colnames(trip_04_2020)
+colnames(trip_05_2020)
+colnames(trip_06_2020)
+colnames(trip_07_2020)
+colnames(trip_08_2020)
+colnames(trip_09_2020)
+colnames(trip_10_2020)
+colnames(trip_11_2020)
+colnames(trip_12_2020)
+```
+
+All columns names were checked and they were all the same. Aside of ensuring consistency of column names, I also checked the internal structure of data 
+frames for any incongruities.
+
+```{r dataframe_structures}
+str(trip_q1_2020)
+str(trip_04_2020)
+str(trip_05_2020)
+str(trip_06_2020)
+str(trip_07_2020)
+str(trip_08_2020)
+str(trip_09_2020)
+str(trip_10_2020)
+str(trip_11_2020)
+str(trip_12_2020)
+```
+
+From the internal structure information, type of start_station_id and end_station_id were integer, so next step was to convert type of integer 
+into character, in order to merge data correctly and ensure its consistency.
+
+```{r convert int to chr}
+trip_q1_2020 <- mutate(trip_q1_2020, start_station_id = as.character(start_station_id),end_station_id = as.character(end_station_id))
+trip_04_2020 <- mutate(trip_04_2020, start_station_id = as.character(start_station_id),end_station_id = as.character(end_station_id))
+trip_05_2020 <- mutate(trip_05_2020, start_station_id = as.character(start_station_id),end_station_id = as.character(end_station_id))
+trip_06_2020 <- mutate(trip_06_2020, start_station_id = as.character(start_station_id),end_station_id = as.character(end_station_id))
+trip_07_2020 <- mutate(trip_07_2020, start_station_id = as.character(start_station_id),end_station_id = as.character(end_station_id))
+trip_08_2020 <- mutate(trip_08_2020, start_station_id = as.character(start_station_id),end_station_id = as.character(end_station_id))
+trip_09_2020 <- mutate(trip_09_2020, start_station_id = as.character(start_station_id),end_station_id = as.character(end_station_id))
+trip_10_2020 <- mutate(trip_10_2020, start_station_id = as.character(start_station_id),end_station_id = as.character(end_station_id))
+trip_11_2020 <- mutate(trip_11_2020, start_station_id = as.character(start_station_id),end_station_id = as.character(end_station_id))
+trip_12_2020 <- mutate(trip_12_2020, start_station_id = as.character(start_station_id),end_station_id = as.character(end_station_id))
+```
+
+Now, it was ready to merge all files into one big data frame!
+
+```{r merge_one_single_dataframe}
+all_trips <- bind_rows(trip_q1_2020, trip_04_2020, trip_05_2020, trip_06_2020, trip_07_2020, trip_08_2020,
+                   trip_09_2020, trip_10_2020, trip_11_2020, trip_12_2020)
+```
+
+Remove variables start_lat, start_lng, end_lat, end_lng, start_station_name, start_station_id, end_station_name, end_station_id from the new data frame. 
+
+```{r remove_variables_not_need}
+all_trips <- all_trips %>%
+  select(-c(start_lat, start_lng, end_lat, end_lng, start_station_name, start_station_id, end_station_name, end_station_id))
+```
+
+# STEP 3: CLEAN UP AND ADD DATA TO PREPARE FOR ANALYSIS
+
+Inspected the new table that has been created: column names, dimensions, and summarized statistics indices of the data frame. 
+
+```{r internal_inspection_new_dataframe}
+colnames(all_trips)
+nrow(all_trips)
+dim(all_trips)
+head(all_trips)
+str(all_trips)
+summary(all_trips)
+```
+
+Since the business task focused on "How do annual members and casual riders use Cyclistic bikes differently?", 
+I needed to make sure the categories, as well as their amounts, under variables rideable_type and member_casual.
+
+```{r categories_and_amount}
+ride_cat <- unique(all_trips$rideable_type)
+ride_cat
+user_cat <- unique(all_trips$member_casual)
+user_cat
+table(all_trips$rideable_type)
+table(all_trips$member_casual)
+```
+
+Based on results, there were two types of users under variable member_casual: 1366575 for casual users, and 2175108 for annual members. 
+There were three bike types under variable rideable_type: 70616 for classic_bike, 2966322 for docked_bike, and 504745 for electric_bike.
+
+I wanted to add more columns into the data frame, and since there was variable started_at, I could extract some date and time information from it. 
+
+```{r extract_information_add_columns}
+all_trips$date <- as.Date(all_trips$started_at) #extract date information from the column
+all_trips$day <- format(as.Date(all_trips$started_at), "%d") # format the date information for day
+all_trips$month <- format(as.Date(all_trips$started_at), "%m") #format the date information for month
+all_trips$year <- format(as.Date(all_trips$started_at), "%Y") #format the date information for year in 4-digit
+all_trips$day_of_week <- format(as.Date(all_trips$started_at), "%A") #format the date information for day of the week using unabbreviated weekday
+
+```
+
+I added a column called ride_length and presented the time length in minutes. 
+
+```{r ride_length_in_mins}
+all_trips$ride_length <- difftime(all_trips$ended_at, all_trips$started_at, units = "mins")
+```
+
+After adding more columns, I checked the internal structure of the data frame again.
+
+```{r internal_structure}
+str(all_trips)
+```
+
+Data type of variable ride_length was double, and I converted it into numeric so I could run calculations on the data.
+
+```{r convert_numeric}
+all_trips$ride_length <- as.numeric(as.character(all_trips$ride_length))
+is.numeric(all_trips$ride_length)
+```
+
+# REMOVE "BAD" DATA
+
+For the variable ride_length, it should be greater than 0 and should not be in a negative form. 
+
+Also, I have removed those with ride_length greater than one day (1440 minutes). 
+
+```{r removed_bad_data}
+all_trips_2 <- all_trips[!(all_trips$ride_length<=0),] # create a new data frame after removing bad data
+sum(all_trips$ride_length<=0)
+sum(all_trips_2$ride_length<=0)
+
+sum(all_trips$ride_length>=1440)
+all_trips_2 <- all_trips_2[!(all_trips_2$ride_length>=1440),]
+sum(all_trips_2$ride_length>=1440)
+```
+
+There were 11126 rows that ride_length was equal to 0 or smaller than 0, and there were 2863 rows that ride_length was equal or greater than one day. 
+All of these rows were being removed. 
+
+At this point, there were following variables in the new data frame with those ride_length in negative form and over one day being removed:
+
+* ride_id
+* rideable_type: classic_bike, docked_bike, and electric_bike
+* started_at
+* ended_at
+* member_casual: member, casual
+* date
+* month
+* year
+* day_of_week
+* ride_length
+
+# STEP 4: CONDUCT DESCRIPTIVE ANALYSIS
+
+I computed some descriptive indices on ride_length: 
+
+```{r descriptive_analysis}
+mean(all_trips_2$ride_length)
+median(all_trips_2$ride_length) 
+min(all_trips_2$ride_length) 
+max(all_trips_2$ride_length) 
+summary(all_trips_2$ride_length) 
+```
+
+* Mean ride_length: 23.5301 mins
+* Median ride_length: 14.1 mins
+* Minimum ride_length: 0.0167 mins
+* Maximum ride_length: 1439.817 mins
+
+Besides the ride_length, I wanted to visualize the proportion of (pie chart):
+
+* annual members and casual users over the total users population
+* classic_bike, docked_bike, and electric_bike over the total bikes population
+
+```{r proportion_member_casual}
+all_trips_2 %>%
+  group_by(member_casual) %>%
+  summarise(number_of_users = n()) %>%
+  ggplot(aes(x="", y=number_of_users, fill=member_casual)) +
+  geom_col(color = "black") +
+  geom_text(aes(label = number_of_users), position = position_stack(vjust = 0.5),
+            show.legend = FALSE) +
+  coord_polar(theta = "y")
+```
+
+Annual members occupied 61.44% and casual users were around 38.54%. 
+
+```{r proportion_bike_types}
+all_trips_2 %>%
+  group_by(rideable_type) %>%
+  summarise(number_of_bikes = n()) %>%
+  ggplot(aes(x="", y=number_of_bikes, fill=rideable_type)) +
+  geom_col(color = "black") +
+  geom_text(aes(label = number_of_bikes), position = position_stack(vjust = 0.5),
+            show.legend = FALSE) +
+  coord_polar(theta = "y") +
+  theme_void() +
+  labs(title = "Proportion of Three Different Types of Bikes")
+```
+
+Over all three bike types, there were 2.00% for classic_bike, 14.30% for electric_bike, and 83.70% for docked_bike. 
+
+Next, I compared the annual members and casual users regarding ride_length
+
+```{r users_ridelength}
+aggregate(all_trips_2$ride_length ~ all_trips_2$member_casual, FUN = mean)
+aggregate(all_trips_2$ride_length ~ all_trips_2$member_casual, FUN = median)
+aggregate(all_trips_2$ride_length ~ all_trips_2$member_casual, FUN = min)
+aggregate(all_trips_2$ride_length ~ all_trips_2$member_casual, FUN = max)
+```
+
+I wanted to compare average ride time by the each day for annual members and casual users, but first, looking at the data frame, 
+day_of_week were out of correct of order and I would assign the actual day to the number.
+
+```{r assign_day}
+all_trips_2$day_of_week <- ordered(all_trips_2$day_of_week, levels = c("Sunday","Monday",
+                                                                    "Tuesday","Wednesday",
+                                                                       "Thursday","Friday",
+                                                                       "Saturday"))
+```
+
+```{r average_ride_length_weekday}
+aggregate(all_trips_2$ride_length ~ all_trips_2$member_casual + all_trips_2$day_of_week, FUN =mean)
+```
+
+Visualized the results about weekday and average ride time based on annual members and casual users.
+
+```{r viz_average_ride_length_weekday}
+all_trips_2 %>%
+  mutate(weekday = wday(started_at, label = TRUE)) %>%
+  group_by(member_casual, weekday) %>%
+  summarise(number_of_rides = n(), average_duration = mean(ride_length)) %>%
+  arrange(member_casual, weekday) %>%
+  ggplot(aes(x = weekday, y = average_duration, fill = member_casual)) +
+  geom_col(position = "dodge") +
+  ggtitle("Average Duration based on Rider Type")
+```
+
+Analyzed ridership data by number_of_rides and weekday.
+
+```{r ride_length_user_weekday}
+all_trips_2 %>%
+  mutate(weekday = wday(started_at, label = TRUE)) %>%
+  group_by(member_casual, weekday) %>%
+  summarise(number_of_rides = n(), average_duration = mean(ride_length)) %>%
+  arrange(member_casual, weekday)
+```
+
+Created data visualization on number_of_rides and weekday based on annual members and causal users.
+
+```{r viz_total_rides_weekday}
+all_trips_2 %>%
+  mutate(weekday = wday(started_at, label = TRUE)) %>%
+  group_by(member_casual, weekday) %>%
+  summarise(number_of_rides = n(), average_duration = mean(ride_length)) %>%
+  arrange(member_casual, weekday) %>%
+  ggplot(aes(x = weekday, y = number_of_rides, fill = member_casual)) +
+  geom_col(position = "dodge") +
+  ggtitle("Number of Bikes based on Rider Type")
+```
+
+Analyzed and visualized the relationship between different bike types usage and user types.
+
+```{r bike_type_user}
+all_trips_2 %>%
+  mutate(all_trips_2$rideable_type, label = TRUE) %>%
+  group_by(rideable_type, member_casual) %>%
+  arrange(member_casual, rideable_type) %>%
+  summarise(number_of_rides = n()) %>%
+  ggplot(aes(x = rideable_type, y = number_of_rides, fill = member_casual)) +
+  geom_col(position = "dodge") +
+  ggtitle("Different Bike Types Usage")
+```
+
+# STEP 5: EXPORT SUMMARY FILE FOR FURTHER ANALYSIS
+
+I generated a summary file, exported and saved it as .csv file for future analysis.
+
+```{r generated_summary_report}
+counts <- aggregate(all_trips_2$ride_length ~ all_trips_2$member_casual + 
+                      all_trips_2$day_of_week, FUN = mean)
+```
+
+```{r exported_saved_csv}
+write.csv(counts, file ="/Users/irene/Desktop/Google_Project/CSV_files/avg_ride_length.csv")
+```
+
+# FINDINGS
+
+* Casual users occupied almost 40% of the total users population. 
+* Docked bike was the most popular one (over 80%) among three bike types.
+* Casual users mostly use the bike-share service on the weekends, but less often during the weekdays. 
+  Number of rides from casual users on the weekdays was only half of number on the weekends. 
+* Average duration from casual users were twice as much as annual members' over the whole weeks.
+
+# CONCULSIONS / SUGGESTIONS
+
+* Provide special membership offers (e.g lower price) for using docked bikes in order to convert huge casual docked bike users into annual members. 
+* Offer "weekdays membership packages" to those who use Cyclistic bikes on weekdays. 
+* Set a duration milestone and create cash-back or credit-bonus membership program to convert casual users into members because 
+  they have a longer average duration than current members. 
+
+# LIMITATION / FUTURE IMPROVEMENT
+
+* There were 11126 rows that ride duration was equal to or less than 0 minutes, and 2863 rows that ride duration was greater than one day. All of these were removed and we should figure out - whether technical errors have occurred in the system (e.g. negative ride duration records)
+- and the possibility of users rent Cyclistic over a day (e.g ride duration over 1440 minutes.)
+    
+* There were huge number of rows that the station names were missing while the latitude and longitude information recorded. 
+I didn't remove or drop these rows, but I think the missing station name could be fixed by comparing latitude and longitude information from other rows. 
+
+
+
+
+
+
+
